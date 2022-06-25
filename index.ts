@@ -43,6 +43,8 @@ class BatchWrapper {
   };
 }
 
+// TEST
+
 const fun = (args) =>
   new Promise((resolve) =>
     setTimeout(
