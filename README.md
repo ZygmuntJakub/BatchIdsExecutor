@@ -17,10 +17,10 @@ you can simplify it
 fun([1,2,3]);
 ```
 
-- A class is created with the function and time window specified.
+- A class is created with the function, time window specified and id key from result object.
 
 ```
-const batchIdsExecutor = new BatchIdsExecutor({ fun, ms: 3000 });
+const batchIdsExecutor = new BatchIdsExecutor({ fun, ms: 3000, idKey: 'id });
 ```
 
 - The first call of `batchExecute` creates the time window and saves the id to the store of the current time window.

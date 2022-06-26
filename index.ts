@@ -1,6 +1,7 @@
-class BatchIdsExecutor<IdType, FunResult extends { id: IdType }> {
+class BatchIdsExecutor<FunResult, IdType, IdKey extends keyof FunResult> {
   fun: (ids: IdType[]) => Promise<FunResult[]>;
   ms = 500;
+  idKey: IdKey;
 
   _cache = new Map();
   _currentIds: IdType[] = [];
@@ -9,18 +10,21 @@ class BatchIdsExecutor<IdType, FunResult extends { id: IdType }> {
   constructor({
     fun,
     ms,
+    idKey,
   }: {
     fun: (ids: IdType[]) => Promise<FunResult[]>;
     ms: number;
+    idKey: IdKey;
   }) {
     this.fun = fun;
     this.ms = ms;
+    this.idKey = idKey;
   }
 
   _executeFun = () => {
     return this.fun(this._currentIds).then((results) => {
       results.forEach((data) => {
-        this._cache.set(data.id, data);
+        this._cache.set(data[this.idKey], data);
       });
     });
   };
@@ -67,9 +71,10 @@ const fun: (ids: number[]) => Promise<{ date: Date; id: number }[]> = (ids) =>
   );
 
 const batchIdsExecutor = new BatchIdsExecutor<
+  { date: Date; id: number },
   number,
-  { date: Date; id: number }
->({ fun, ms: 3000 });
+  'id'
+>({ fun, ms: 3000, idKey: 'id' });
 
 setTimeout(() => batchIdsExecutor.batchExecute(1).then(console.log), 500);
 setTimeout(() => batchIdsExecutor.batchExecute(2).then(console.log), 1000);
