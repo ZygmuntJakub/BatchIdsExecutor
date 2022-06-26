@@ -1,5 +1,21 @@
 The class serves as a tool to batch execute a function to which arguments collected during the indicated time window will be passed.
 
+TL;DR
+This is mainly useful when the function makes a request to the API and instead of making n requests you can make one and then store the values in the cache.
+
+
+Instead of this
+```
+fun(1);
+fun(2);
+fun(3);
+```
+
+you can simlify to this
+```
+fun([1,2,3]);
+```
+
 - A class is created with the function and time window specified.
 
 ```
