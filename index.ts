@@ -42,13 +42,13 @@ class BatchArgsExecutor {
     return this._sleepCallback.then(() => this._cache.get(arg));
   };
 
-  resetCache() {
+  resetCache = () => {
     this._cache = new Map();
-  }
+  };
 
-  deleteFromCache(arg: unknown) {
+  deleteFromCache = (arg: unknown) => {
     return this._cache.delete(arg);
-  }
+  };
 }
 
 export default BatchArgsExecutor;
