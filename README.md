@@ -44,6 +44,15 @@ batchArgsExecutor.batchExecute(2);
 batchArgsExecutor.batchExecute(3);
 ```
 
+- Another call to the same argument will return the value from cache
+
+```
+batchArgsExecutor.batchExecute(1); // returns after 3000ms
+batchArgsExecutor.batchExecute(2); // returns after 3000ms
+batchArgsExecutor.batchExecute(3); // returns after 3000ms
+batchArgsExecutor.batchExecute(3); // returns immediately from cache
+```
+
 - Additionally, the class provides methods to delete data from the cache and to reset the cache.
 
 ```
