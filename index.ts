@@ -6,7 +6,7 @@ class BatchArgsExecutor {
   _currentArgs = [];
   _sleepCallback = undefined;
 
-  constructor({ fun, ms}) {
+  constructor({ fun, ms }) {
     this.fun = fun;
     this.ms = ms;
   }
@@ -51,6 +51,8 @@ class BatchArgsExecutor {
   }
 }
 
+export default BatchArgsExecutor;
+
 // TEST
 
 const fun = (args) =>
@@ -68,5 +70,8 @@ setTimeout(() => batchArgsExecutor.batchExecute(2).then(console.log), 1000);
 setTimeout(() => batchArgsExecutor.batchExecute(3).then(console.log), 2000);
 setTimeout(() => batchArgsExecutor.batchExecute(3).then(console.log), 5000);
 setTimeout(() => batchArgsExecutor.batchExecute(4).then(console.log), 5000);
+
+setTimeout(() => batchArgsExecutor.deleteFromCache(3), 6000);
+setTimeout(() => batchArgsExecutor.batchExecute(3).then(console.log), 6500);
 
 batchArgsExecutor.resetCache();

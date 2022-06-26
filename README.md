@@ -4,14 +4,14 @@ TL;DR
 This is mainly useful when the function makes a request to the API and instead of making n requests you can make one and then store the values in the cache.
 
 
-Instead of this
+Instead of doing it this way
 ```
 fun(1);
 fun(2);
 fun(3);
 ```
 
-you can simplify to this
+you can simplify it
 ```
 fun([1,2,3]);
 ```
@@ -22,13 +22,13 @@ fun([1,2,3]);
 const batchArgsExecutor = new BatchArgsExecutor({ fun, ms: 3000 });
 ```
 
-- The first call of `batchExecute` creates the time window and saves the argument to the cache of the current time window.
+- The first call of `batchExecute` creates the time window and saves the argument to the store of the current time window.
 
 ```
 batchArgsExecutor.batchExecute(1); // _currentArgs = [1]
 ```
 
-- Subsequent calls add arguments to the cache of the current time window.
+- Subsequent calls add arguments to the store of the current time window.
 
 ```
 batchArgsExecutor.batchExecute(2); // _currentArgs = [1,2]
