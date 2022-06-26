@@ -1,4 +1,4 @@
-class BatchWrapper {
+class BatchArgsExecutor {
   fun: (arg: unknown) => Promise<unknown> = () => Promise.resolve();
   ms = 500;
 
@@ -6,7 +6,7 @@ class BatchWrapper {
   _currentArgs = [];
   _sleepCallback = undefined;
 
-  constructor({ fun, ms }) {
+  constructor({ fun, ms}) {
     this.fun = fun;
     this.ms = ms;
   }
@@ -19,7 +19,7 @@ class BatchWrapper {
     });
   };
 
-  _reset = () => {
+  _resetCurrentArgs = () => {
     this._sleepCallback = undefined;
     this._currentArgs = [];
   };
@@ -32,7 +32,7 @@ class BatchWrapper {
     if (!this._sleepCallback)
       this._sleepCallback = new Promise((resolve) =>
         setTimeout(
-          () => this._executeFun().then(this._reset).then(resolve),
+          () => this._executeFun().then(this._resetCurrentArgs).then(resolve),
           this.ms
         )
       );
@@ -41,6 +41,14 @@ class BatchWrapper {
 
     return this._sleepCallback.then(() => this._cache.get(arg));
   };
+
+  resetCache() {
+    this._cache = new Map();
+  }
+
+  deleteFromCache(arg: unknown) {
+    return this._cache.delete(arg);
+  }
 }
 
 // TEST
@@ -53,10 +61,12 @@ const fun = (args) =>
     )
   );
 
-const wrapper = new BatchWrapper({ fun, ms: 3000 });
+const batchArgsExecutor = new BatchArgsExecutor({ fun, ms: 3000 });
 
-setTimeout(() => wrapper.batchExecute(1).then(console.log), 500);
-setTimeout(() => wrapper.batchExecute(2).then(console.log), 1000);
-setTimeout(() => wrapper.batchExecute(3).then(console.log), 2000);
-setTimeout(() => wrapper.batchExecute(3).then(console.log), 5000);
-setTimeout(() => wrapper.batchExecute(4).then(console.log), 5000);
+setTimeout(() => batchArgsExecutor.batchExecute(1).then(console.log), 500);
+setTimeout(() => batchArgsExecutor.batchExecute(2).then(console.log), 1000);
+setTimeout(() => batchArgsExecutor.batchExecute(3).then(console.log), 2000);
+setTimeout(() => batchArgsExecutor.batchExecute(3).then(console.log), 5000);
+setTimeout(() => batchArgsExecutor.batchExecute(4).then(console.log), 5000);
+
+batchArgsExecutor.resetCache();
