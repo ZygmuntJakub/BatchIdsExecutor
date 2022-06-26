@@ -11,7 +11,7 @@ fun(2);
 fun(3);
 ```
 
-you can simlify to this
+you can simplify to this
 ```
 fun([1,2,3]);
 ```
