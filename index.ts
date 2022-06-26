@@ -7,61 +7,51 @@ class BatchIdsExecutor<FunResult, IdType, IdKey extends keyof FunResult> {
   _currentIds: IdType[] = [];
   _sleepCallback: undefined | Promise<unknown> = undefined;
 
-  constructor({
-    fun,
-    ms,
-    idKey,
-  }: {
-    fun: (ids: IdType[]) => Promise<FunResult[]>;
-    ms: number;
-    idKey: IdKey;
-  }) {
-    this.fun = fun;
-    this.ms = ms;
-    this.idKey = idKey;
+  constructor({ fun, ms, idKey }: { fun: (ids: IdType[]) => Promise<FunResult[]>; ms: number; idKey: IdKey }) {
+      this.fun = fun;
+      this.ms = ms;
+      this.idKey = idKey;
   }
 
   _executeFun = () => {
-    return this.fun(this._currentIds).then((results) => {
-      results.forEach((data) => {
-        this._cache.set(data[this.idKey], data);
+      return this.fun(this._currentIds).then((results) => {
+          results.forEach((data) => {
+              this._cache.set(data[this.idKey], data);
+          });
       });
-    });
   };
 
   _resetCurrentIds: () => void = () => {
-    this._sleepCallback = undefined;
-    this._currentIds = [];
+      this._sleepCallback = undefined;
+      this._currentIds = [];
   };
 
   batchExecute: (id: IdType) => Promise<FunResult> = (id) => {
-    if (this._cache.has(id)) {
-      return Promise.resolve(this._cache.get(id));
-    }
+      if (this._cache.has(id)) {
+          return Promise.resolve(this._cache.get(id));
+      }
 
-    if (!this._sleepCallback)
-      this._sleepCallback = new Promise((resolve) =>
-        setTimeout(
-          () => this._executeFun().then(this._resetCurrentIds).then(resolve),
-          this.ms
-        )
-      );
+      if (!this._sleepCallback)
+          this._sleepCallback = new Promise((resolve) =>
+              setTimeout(() => this._executeFun().then(this._resetCurrentIds).then(resolve), this.ms),
+          );
 
-    this._currentIds.push(id);
+      this._currentIds.push(id);
 
-    return this._sleepCallback.then(() => this._cache.get(id));
+      return this._sleepCallback.then(() => this._cache.get(id));
   };
 
   resetCache: () => void = () => {
-    this._cache = new Map();
+      this._cache = new Map();
   };
 
-  deleteFromCache: (arg: unknown) => boolean = (arg) => {
-    return this._cache.delete(arg);
+  deleteFromCache: (id: IdType) => boolean = (id) => {
+      return this._cache.delete(id);
   };
 }
 
 export default BatchIdsExecutor;
+
 
 // TEST
 
