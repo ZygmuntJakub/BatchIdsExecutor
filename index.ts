@@ -1,77 +1,83 @@
-class BatchArgsExecutor {
-  fun: (arg: unknown) => Promise<unknown> = () => Promise.resolve();
+class BatchIdsExecutor<IdType, FunResult extends { id: IdType }> {
+  fun: (ids: IdType[]) => Promise<FunResult[]>;
   ms = 500;
 
   _cache = new Map();
-  _currentArgs = [];
-  _sleepCallback = undefined;
+  _currentIds: IdType[] = [];
+  _sleepCallback: undefined | Promise<unknown> = undefined;
 
-  constructor({ fun, ms }) {
+  constructor({
+    fun,
+    ms,
+  }: {
+    fun: (ids: IdType[]) => Promise<FunResult[]>;
+    ms: number;
+  }) {
     this.fun = fun;
     this.ms = ms;
   }
 
   _executeFun = () => {
-    return this.fun(this._currentArgs).then((results: { arg: unknown }[]) => {
+    return this.fun(this._currentIds).then((results) => {
       results.forEach((data) => {
-        this._cache.set(data.arg, data);
+        this._cache.set(data.id, data);
       });
     });
   };
 
-  _resetCurrentArgs = () => {
+  _resetCurrentIds: () => void = () => {
     this._sleepCallback = undefined;
-    this._currentArgs = [];
+    this._currentIds = [];
   };
 
-  batchExecute = (arg: unknown) => {
-    if (this._cache.has(arg)) {
-      return Promise.resolve(this._cache.get(arg));
+  batchExecute: (id: IdType) => Promise<FunResult> = (id) => {
+    if (this._cache.has(id)) {
+      return Promise.resolve(this._cache.get(id));
     }
 
     if (!this._sleepCallback)
       this._sleepCallback = new Promise((resolve) =>
         setTimeout(
-          () => this._executeFun().then(this._resetCurrentArgs).then(resolve),
+          () => this._executeFun().then(this._resetCurrentIds).then(resolve),
           this.ms
         )
       );
 
-    this._currentArgs.push(arg);
+    this._currentIds.push(id);
 
-    return this._sleepCallback.then(() => this._cache.get(arg));
+    return this._sleepCallback.then(() => this._cache.get(id));
   };
 
-  resetCache = () => {
+  resetCache: () => void = () => {
     this._cache = new Map();
   };
 
-  deleteFromCache = (arg: unknown) => {
+  deleteFromCache: (arg: unknown) => boolean = (arg) => {
     return this._cache.delete(arg);
   };
 }
 
-export default BatchArgsExecutor;
+export default BatchIdsExecutor;
 
 // TEST
 
-const fun = (args) =>
+const fun: (ids: number[]) => Promise<{ date: Date; id: number }[]> = (ids) =>
   new Promise((resolve) =>
-    setTimeout(
-      () => resolve(args.map((arg) => ({ date: new Date(), arg }))),
-      500
-    )
+    setTimeout(() => resolve(ids.map((id) => ({ date: new Date(), id }))), 500)
   );
 
-const batchArgsExecutor = new BatchArgsExecutor({ fun, ms: 3000 });
+const batchIdsExecutor = new BatchIdsExecutor<
+  number,
+  { date: Date; id: number }
+>({ fun, ms: 3000 });
 
-setTimeout(() => batchArgsExecutor.batchExecute(1).then(console.log), 500);
-setTimeout(() => batchArgsExecutor.batchExecute(2).then(console.log), 1000);
-setTimeout(() => batchArgsExecutor.batchExecute(3).then(console.log), 2000);
-setTimeout(() => batchArgsExecutor.batchExecute(3).then(console.log), 5000);
-setTimeout(() => batchArgsExecutor.batchExecute(4).then(console.log), 5000);
+setTimeout(() => batchIdsExecutor.batchExecute(1).then(console.log), 500);
+setTimeout(() => batchIdsExecutor.batchExecute(2).then(console.log), 1000);
+setTimeout(() => batchIdsExecutor.batchExecute(3).then(console.log), 2000);
+setTimeout(() => batchIdsExecutor.batchExecute(3).then(console.log), 5000);
+setTimeout(() => batchIdsExecutor.batchExecute(4).then(console.log), 5000);
 
-setTimeout(() => batchArgsExecutor.deleteFromCache(3), 6000);
-setTimeout(() => batchArgsExecutor.batchExecute(3).then(console.log), 6500);
+setTimeout(() => batchIdsExecutor.deleteFromCache(3), 6000);
+setTimeout(() => batchIdsExecutor.batchExecute(3).then(console.log), 6500);
 
-batchArgsExecutor.resetCache();
+batchIdsExecutor.resetCache();
